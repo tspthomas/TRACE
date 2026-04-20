@@ -10,7 +10,14 @@ from transformers import (
     AutoModel,
 )
 from huggingface_hub import snapshot_download
-from transformers.deepspeed import HfDeepSpeedConfig
+try:
+    from transformers.deepspeed import HfDeepSpeedConfig
+except ImportError:
+    # For newer transformers versions where deepspeed was moved/removed
+    try:
+        from deepspeed.utils import HfDeepSpeedConfig
+    except ImportError:
+        HfDeepSpeedConfig = None
 from transformers import LlamaForCausalLM, LlamaConfig
 
 
@@ -27,7 +34,10 @@ def create_hf_model(model_class,
     # Note: dschf is defined in function scope to avoid global effects
     # https://huggingface.co/docs/transformers/main_classes/deepspeed#nontrainer-deepspeed-integration
     if ds_config is not None and ds_config["zero_optimization"]["stage"] == 3:
-        dschf = HfDeepSpeedConfig(ds_config)
+        if HfDeepSpeedConfig is not None:
+            dschf = HfDeepSpeedConfig(ds_config)
+        else:
+            dschf = None
     else:
         dschf = None
 
@@ -38,9 +48,14 @@ def create_hf_model(model_class,
         trust_remote_code=True)
 
     # llama use eos_token_id but not end_token_id
-    model.config.end_token_id = tokenizer.eos_token_id
+    # Handle case where eos_token_id might be a list (e.g., Llama-3.2)
+    eos_token_id = model.config.eos_token_id
+    if isinstance(eos_token_id, list):
+        eos_token_id = eos_token_id[0] if eos_token_id else tokenizer.eos_token_id
+    
+    model.config.end_token_id = eos_token_id
     # compatible with OPT and llama2
-    model.config.pad_token_id = model.config.eos_token_id
+    model.config.pad_token_id = eos_token_id if eos_token_id is not None else tokenizer.eos_token_id
     model.resize_token_embeddings(int(8 * math.ceil(len(tokenizer) / 8.0)))  # make the vocab size multiple of 8
 
     return model

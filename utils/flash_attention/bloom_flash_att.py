@@ -9,7 +9,11 @@ from transformers.models.bloom.modeling_bloom import dropout_add
 
 from einops import rearrange
 
-from .triton_flash_att import flash_attn_qkvpacked_func
+try:
+    from .triton_flash_att import flash_attn_qkvpacked_func
+    FLASH_ATTN_AVAILABLE = True
+except ImportError:
+    FLASH_ATTN_AVAILABLE = False
 
 def forward(
         self,
@@ -96,6 +100,8 @@ def _prepare_attn_mask(
         return attention_mask
 
 def replace_bloom_attn_with_flash_attn():
+    if not FLASH_ATTN_AVAILABLE:
+        return
     transformers.models.bloom.modeling_bloom.BloomModel._prepare_attn_mask = (
         _prepare_attn_mask
     )

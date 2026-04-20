@@ -6,7 +6,11 @@ from tqdm.auto import tqdm
 import logging, os, argparse
 
 from copy import deepcopy
-from transformers import AdamW
+# Import AdamW from torch.optim (it was moved from transformers in newer versions)
+try:
+    from torch.optim import AdamW
+except ImportError:
+    from transformers import AdamW
 from model.base_model import CL_Base_Model
 
 

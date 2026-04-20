@@ -11,10 +11,15 @@ from einops import rearrange
 #try to import flash_attn 2.x.x, if not, import flash_attn 1.x.x
 try:
     from flash_attn.flash_attn_interface import flash_attn_varlen_qkvpacked_func as flash_attn_unpadded_qkvpacked_func
-except:
-    from flash_attn.flash_attn_interface import flash_attn_unpadded_qkvpacked_func
-
-from flash_attn.bert_padding import unpad_input, pad_input
+    from flash_attn.bert_padding import unpad_input, pad_input
+    FLASH_ATTN_AVAILABLE = True
+except ImportError:
+    try:
+        from flash_attn.flash_attn_interface import flash_attn_unpadded_qkvpacked_func
+        from flash_attn.bert_padding import unpad_input, pad_input
+        FLASH_ATTN_AVAILABLE = True
+    except ImportError:
+        FLASH_ATTN_AVAILABLE = False
 
 
 def forward(
@@ -113,6 +118,8 @@ def _prepare_decoder_attention_mask(
 
 
 def replace_llama_attn_with_flash_attn():
+    if not FLASH_ATTN_AVAILABLE:
+        return
     transformers.models.llama.modeling_llama.LlamaModel._prepare_decoder_attention_mask = (
         _prepare_decoder_attention_mask
     )
