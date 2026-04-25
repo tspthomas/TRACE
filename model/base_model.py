@@ -75,6 +75,7 @@ class CL_Base_Model:
         total_steps = epochs * len(train_dataloader)
         progress_bar = tqdm(total=total_steps, leave=True, disable=(self.args.global_rank != 0))
         for epoch in range(epochs):
+            print_rank_0(f"***** Training on task {task}", self.args.global_rank)
             print_rank_0(
                 f"Beginning of Epoch {epoch+1}/{epochs}, Total Micro Batches {len(train_dataloader)}",
                 self.args.global_rank)

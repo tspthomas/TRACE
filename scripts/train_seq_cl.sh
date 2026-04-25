@@ -1,12 +1,25 @@
 #!bin/bash
 
-$cl_method="EWC"
+model="meta-llama/Llama-3.2-1B-Instruct"
+#model="Qwen/Qwen3.5-0.8B"
+#model="google/gemma-3-1b-it"
+data_path="/A/thomas/TRACE-Benchmark/LLM-CL-Benchmark_500"
+#dataset_name="C-STANCE,FOMC,MeetingBank,Py150,ScienceQA,NumGLUE-cm,NumGLUE-ds,20Minuten"
+dataset_name="C-STANCE,FOMC"
+cl_method="EWC"
+
+output_root="/A/thomas/TRACE-Benchmark/outputs/LLM-CL_Benchmark_500"
+output_dir="${output_root}/${cl_method}/${model//\//_}/"
+
+mkdir -p "$output_dir"
+
 port=$(shuf -i25000-30000 -n1)
-deepspeed --include=localhost:0,1,2,3,4,5,6,7 --master_port $port training/main.py  \
-    --data_path /mnt/data/user/zhang_yuansen/LLM-CL-Benchmark \
-    --dataset_name C-STANCE,FOMC,MeetingBank,Py150,ScienceQA,NumGLUE-cm,NumGLUE-ds,20Minuten \
-    --model_name_or_path /mnt/data/user/zhang_yuansen/PTMs/llama-2-7b-chat \
-    --per_device_train_batch_size 2 \
+
+uv run deepspeed --master_port "$port" training/main.py \
+    --data_path "$data_path" \
+    --dataset_name "$dataset_name" \
+    --model_name_or_path "$model" \
+    --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 16 \
     --max_prompt_len 1024 \
     --max_ans_len 512 \
@@ -21,5 +34,4 @@ deepspeed --include=localhost:0,1,2,3,4,5,6,7 --master_port $port training/main.
     --deepspeed \
     --print_loss \
     --CL_method $cl_method \
-    --output_dir /mnt/data/user/zhang_yuansen/outputs_LLM-CL/cl/$cl_method > /mnt/data/user/zhang_yuansen/outputs_LLM-CL/cl/$cl_method/train.log 2>&1 &
-
+    --output_dir "$output_dir" > "${output_dir}/train.log" 2>&1 &

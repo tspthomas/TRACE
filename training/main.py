@@ -267,7 +267,8 @@ def main():
         from utils.my_peft import get_peft_model, PromptTuningInit, PromptTuningConfig, LoraConfig, TaskType
 
         peft_config = LoraConfig(
-            task_type=TaskType.CAUSAL_LM, r=8, lora_alpha=32, lora_dropout=0.1
+            task_type=TaskType.CAUSAL_LM, r=8, lora_alpha=32, lora_dropout=0.1,
+            target_modules=["q_proj", "v_proj", "k_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
         )
         model = get_peft_model(model, peft_config)
         for name, param in model.named_parameters():
@@ -280,7 +281,8 @@ def main():
         from peft import get_peft_model, LoraConfig, TaskType
         
         peft_config = LoraConfig(
-            task_type=TaskType.CAUSAL_LM, r=8, lora_alpha=32, lora_dropout=0.1
+            task_type=TaskType.CAUSAL_LM, r=8, lora_alpha=32, lora_dropout=0.1,
+            target_modules=["q_proj", "v_proj", "k_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
         )
         model = get_peft_model(model, peft_config)
         for name, param in model.named_parameters():
@@ -291,7 +293,8 @@ def main():
         from peft import get_peft_model, LoraConfig, TaskType
         
         peft_config = LoraConfig(
-            task_type=TaskType.CAUSAL_LM, r=8, lora_alpha=32, lora_dropout=0.1
+            task_type=TaskType.CAUSAL_LM, r=8, lora_alpha=32, lora_dropout=0.1,
+            target_modules=["q_proj", "v_proj", "k_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
         )
         model = get_peft_model(model, peft_config)
         for name, param in model.named_parameters():

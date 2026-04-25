@@ -31,7 +31,8 @@ dependencies = [
     "rouge",
     "qpth",
     "sacrebleu",
-    "sacremoses"
+    "sacremoses",
+    "python-levenshtein>=0.27.3",
 ]
 
 [[tool.uv.index]]
